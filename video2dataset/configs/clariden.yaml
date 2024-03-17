@@ -1,10 +1,4 @@
-subsampling:
-    CutDetectionSubsampler: # from HD-VILA example
-        args:
-            cut_detection_mode: "all"
-            framerates: null
-            threshold: 11.5
-            min_scene_len: 15
+subsampling: {}
 
 reading:
     yt_args:
@@ -21,13 +15,13 @@ reading:
     sampler: null
 
 storage:
-    number_sample_per_shard: 100
-    oom_shard_count: 10 # TODO
+    number_sample_per_shard: 100  # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
+    oom_shard_count: 10
     captions_are_subtitles: False
 
 distribution:
     processes_count: 128
-    thread_count: 4
+    thread_count: 16
     subjob_size: 10000 # seems not to be used (only for pyspark)
     distributor: "slurm"
     distributor_args:
