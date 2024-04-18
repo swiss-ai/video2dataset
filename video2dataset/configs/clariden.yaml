@@ -1,0 +1,34 @@
+subsampling: {}
+
+reading:
+    yt_args:
+        download_size: 720 # 360?
+        download_audio_rate: 44100
+        video_codec: "avc1"
+        fps: 20
+        yt_metadata_args:
+            writesubtitles: 'all'
+            subtitleslangs: ['en']
+            writeautomaticsub: True
+            get_info: True
+    timeout: 60
+    sampler: null
+
+storage:
+    number_sample_per_shard: 100  # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
+    oom_shard_count: 10
+    captions_are_subtitles: False
+
+distribution:
+    processes_count: 128
+    thread_count: 16
+    subjob_size: 10000 # seems not to be used (only for pyspark)
+    distributor: "slurm"
+    distributor_args:
+        partition: "normal"
+        n_nodes: 4
+        account: null
+        cache_path: "./slurm_cache"
+        cpus_per_task: 128 # 1 node has 128 cores
+        tasks_per_node: 1
+        job_name: "v2d"
