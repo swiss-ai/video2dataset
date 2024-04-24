@@ -4,6 +4,7 @@ Here, we keep documentation for downloading and processing our datasets. Check o
 - [datasets](./datasets/) for instructions on specific datasets
 - [configs](./configs/) for default configs (e.g., for video2dataset downloading on clariden in the correct resolutions etc.)
 - [processing](./processing/) for instuctions on how to run preprocessing steps
+- [overview.ipynb](./dataset_overview.ipynb) for exploring stats on the currently downloaded data
 
 
 ## Dataset Format
