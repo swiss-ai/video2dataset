@@ -56,10 +56,9 @@ Once you run this, you should have a file `hd_vila.parquet` with all the relevan
 To download the videos on clariden, just run video2dataset with the [default download config for clariden](../configs/download_clariden.yaml): From the login node, execute the following command, adapting the paths if necessary
 
 ```
-video2dataset --url_list="hd_vila.parquet" --config="swiss_ai/configs/download_clariden.yaml" --output_folder="./hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}" 
+video2dataset --url_list="hd_vila.parquet" --config="swiss_ai/configs/download_clariden.yaml" --output_folder="./hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
 ```
 
 This should run at a speed of roughly 500 videos/min or 40 GB/min. For further speedups, consider parallelizing over more nodes.
 
 Also, note that unlike in [dataset_examples/HDVILA.md](/dataset_examples/HDVILA.md) we're not performing cut detection while downloading (at least in the default clariden download config). Cut detection seemed to slow things down considerably and we rather want to perform any such processing on the final combined dataset.
-
