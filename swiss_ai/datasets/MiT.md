@@ -12,7 +12,7 @@ This takes ~24h as the server is really slow. There doesn't seem to be a way to 
 ## Bring into video2dataset format
 We can process the raw data to bring it into video2dataset format using [this python script](../utils/process_mit.py)
 ```
-python process.py --raw_zip_path Moments_in_Time.zip --out_dir out_dir
+python process_mit.py --raw_zip_path Moments_in_Time.zip --out_dir out_dir
 ```
 
 It might take a while and could easily be sped up via some parallelization.
