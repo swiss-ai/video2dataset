@@ -10,6 +10,7 @@ from video2dataset import video2dataset
 def main():
     """
     Starting from the HowTo100M.zip file (download from https://www.di.ens.fr/willow/research/howto100m/), produces a csv in the format expected by video2dataset.
+    Optionally also converts to video2dataset format with the -VD flag.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -20,13 +21,23 @@ def main():
     )
     parser.add_argument("-S", "--start_idx", type=int, default=0)
     parser.add_argument("-E", "--end_idx", type=int)
+    parser.add_argument(
+        "-VD", "--run_v2d", action="store_false", help="Whether to run video2dataset on the created files"
+    )
+
     args = parser.parse_args()
-    raw_zip_path, out_dir, start_idx, end_idx = args.raw_zip_path, args.out_dir, args.start_idx, args.end_idx
+    raw_zip_path, out_dir, start_idx, end_idx, run_v2d = (
+        args.raw_zip_path,
+        args.out_dir,
+        args.start_idx,
+        args.end_idx,
+        args.run_v2d,
+    )
 
     # check if the output directory exists and is empty
     if os.path.exists(out_dir):
         if len(os.listdir(out_dir)) != 0:
-            raise ValueError(f"Expected out_dir to be empty, instead has {len(os.listdir(out_dir))} files.")
+            raise ValueError(f"Expected out_dir {out_dir} to be empty, instead has {len(os.listdir(out_dir))} files.")
     else:
         os.makedirs(out_dir)
 
@@ -61,17 +72,18 @@ def main():
         index=False,
     )
 
-    print("Converting to video2dataset")
-    # Convert to v2d format
-    video2dataset(
-        url_list=csv_path,
-        output_folder=out_dir,
-        config="swiss_ai/configs/download_clariden.yaml",
-        input_format="csv",
-        output_format="webdataset",
-        url_col="video_link",
-        encode_formats=dict(video="mp4", audio="m4a"),
-    )
+    if run_v2d:
+        print("Converting to video2dataset")
+        # Convert to v2d format
+        video2dataset(
+            url_list=csv_path,
+            output_folder=out_dir,
+            config="swiss_ai/configs/download_clariden.yaml",
+            input_format="csv",
+            output_format="webdataset",
+            url_col="video_link",
+            encode_formats=dict(video="mp4", audio="m4a"),
+        )
 
 
 if __name__ == "__main__":
