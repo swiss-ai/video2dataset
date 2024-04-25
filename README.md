@@ -237,7 +237,7 @@ Other features are available:
 
 When running the script for the first time, you can decide to either associate your metrics to your account or log them anonymously.
 
-You can also log in (or create an account) before by running `wandb login`.	
+You can also log in (or create an account) before by running `wandb login`.
 
 ## For development
 
@@ -255,15 +255,16 @@ to run tests:
 ```bash
 pip install -r requirements-test.txt
 ```
-then 
+then
 ```bash
 make lint
 make test
 ```
 
-You can use `make black` to reformat the code
-
 `python -m pytest -x -s -v tests -k "dummy"` to run a specific test
+
+formatting:
+Please use `pre-commit` (`pip install pre-commit` and then `pre-commit install`) so that code is automatically linted when committing.
 
 ## Citation
 ```bibtex
