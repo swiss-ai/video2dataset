@@ -17,12 +17,12 @@ def main():
         "-P", "--raw_zip_path", type=str, default="/cluster/work/cotterell/mm_swissai/datasets/howto100m/HowTo100M.zip"
     )
     parser.add_argument(
-        "-O", "--out_dir", type=str, default="/cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d_30000"
+        "-O", "--out_dir", type=str, default="/cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d"
     )
     parser.add_argument("-S", "--start_idx", type=int, default=0)
     parser.add_argument("-E", "--end_idx", type=int)
     parser.add_argument(
-        "-VD", "--run_v2d", action="store_false", help="Whether to run video2dataset on the created files"
+        "-VD", "--run_v2d", action="store_true", help="Whether to run video2dataset on the created files"
     )
 
     args = parser.parse_args()

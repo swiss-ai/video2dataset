@@ -4,7 +4,7 @@ HowTo100M is a dataset of 136M video clips with captions sourced from 1.2M Youtu
 ## Download the raw metadata
 First, run `wget https://www.rocq.inria.fr/cluster-willow/amiech/howto100m/HowTo100M.zip`
 
-Second, run `python utils/process_howto100m.py -P <RAW ZIP PATH> -O /cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d` to preprocess the zip file into a CSV compatible with video2dataset, and then download the videos in video2dataset format. Note the args for passing in the correct path to the zip and an output dir, as well as optional start/end indices.
+Second, run `python utils/process_howto100m.py -P <RAW ZIP PATH> -O /cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d -VD` to preprocess the zip file into a CSV compatible with video2dataset, and then download the videos in video2dataset format (if you don't want to download, exclude the `-VD` flag). Note the args for passing in the correct path to the zip and an output dir, as well as optional start/end indices.
 This will result in a file `/cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d/howto100m_v2d.csv` (or, if you pass in start and end indices, `/cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d/howto100m_v2d_<STARTINDEX>_<ENDINDEX>`).
 
 ## Download the Videos (from CLI)
