@@ -210,7 +210,6 @@ class SlurmDistributor:
 #SBATCH --nodes={self.n_nodes}
 #SBATCH --ntasks-per-node={self.tasks_per_node}
 #SBATCH --cpus-per-task={self.cpus_per_task}
-#SBATCH --gpus-per-node={self.gpus_per_node}
 #SBATCH --exclusive
 {nodelist}
 {exclude}
@@ -231,7 +230,7 @@ srun --account {self.account} bash {self.launcher_path}
         if venv:
             venv_activate = f"source {venv}/bin/activate"
         else:
-            conda_env = os.environ.get("CONDA_ENV")
+            conda_env = os.environ.get("CONDA_ENV", os.environ.get("CONDA_PREFIX"))
             if conda_env:
                 venv_activate = f"conda activate {conda_env}"
             else:
