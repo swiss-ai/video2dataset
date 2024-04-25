@@ -15,28 +15,27 @@ def main():
     args = parser.parse_args()
     raw_zip_path, out_dir = args.raw_zip_path, args.out_dir
 
-
     # check if the output directory exists and is empty
     if os.path.exists(out_dir):
         assert len(os.listdir(out_dir)) == 0
     else:
         os.makedirs(out_dir)
 
-    with zipfile.ZipFile(raw_zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(raw_zip_path, "r") as zip_ref:
 
         print("Analyzing zip file...")
 
         # read categories
         with zip_ref.open("Moments_in_Time_Raw/moments_categories.txt") as f:
-            df_classes = pd.read_csv(f, usecols=[0, 1], names=['name', 'id'])
+            df_classes = pd.read_csv(f, usecols=[0, 1], names=["name", "id"])
             df_classes.set_index("id", inplace=True)
         print(f"Found {len(df_classes)} classes")
 
         # read index files
         with zip_ref.open("Moments_in_Time_Raw/trainingSet.csv") as f:
-            df_train = pd.read_csv(f, usecols=[0, 1, 2, 3], names=['filename', 'label', 'Responses 1', 'Responses 2'])
+            df_train = pd.read_csv(f, usecols=[0, 1, 2, 3], names=["filename", "label", "Responses 1", "Responses 2"])
         with zip_ref.open("Moments_in_Time_Raw/validationSet.csv") as f:
-            df_val = pd.read_csv(f, usecols=[0, 1, 2, 3], names=['filename', 'label', 'Responses 1', 'Responses 2'])
+            df_val = pd.read_csv(f, usecols=[0, 1, 2, 3], names=["filename", "label", "Responses 1", "Responses 2"])
         df_train["path"] = "Moments_in_Time_Raw/training/" + df_train["filename"]
         df_val["path"] = "Moments_in_Time_Raw/validation/" + df_val["filename"]
         df_train["original_split"] = "training"
@@ -122,7 +121,6 @@ def main():
             df_class_metadata.to_parquet(os.path.join(out_dir, class_parquet_fname), index=False)
 
         print(f"Done, #success {n_success}, #failed {n_failures}")
-
 
 
 if __name__ == "__main__":
