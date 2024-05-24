@@ -120,6 +120,7 @@ class VideoDecorder(AbstractVideoDecoder):
         return frames, frame_start, pad_start
 
     def __call__(self, key, data, scene_list=None):  # pylint: disable=arguments-differ
+        # NOTE(kdu): decode into torch tensors
         extension = re.sub(r".*[.]", "", key)
         if extension not in "mp4 ogv mjpeg avi mov h264 mpg webm wmv".split():
             return None

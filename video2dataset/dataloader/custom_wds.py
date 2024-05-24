@@ -120,6 +120,7 @@ class KeyPassThroughDecoder(Decoder):
         :return: Decoded sample.
         :rtype: dict
         """
+        # TODO(kdu): does this only decode certain keys?
         result = {}
         assert isinstance(sample, dict), sample
         for k, v in sample.items():  # Removed unnecessary list conversion
@@ -507,7 +508,7 @@ class TorchDataWebdataset(DataPipeline, FluidInterfaceWithChangedDecode):
             main_datapipe.apply_sharding(world_size, global_rank)
             # synchronize data across processes to prevent hanging if sharding is uneven (which is likely)
             main_datapipe = main_datapipe.fullsync()
-        except RuntimeError:
+        except (RuntimeError, ValueError):  # torch distributed also throws ValueError
             print("torch distributed not used, not applying sharding in dataloader")
             pass
         # start shuffling accross shards for the first time to mix different datasets

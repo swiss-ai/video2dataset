@@ -31,6 +31,7 @@ def reassemble(x):
     new_dict = {}
 
     for key in x:
+        # TODO(kdu): what does this do? something for sharding and recombining?
         if key not in "mp4 ogv mjpeg avi mov h264 mpg webm wmv".split():
             continue
 
@@ -152,16 +153,19 @@ def get_video_dataset(
         )
         video_decoder_cls = VideoDecorder  # type: ignore
 
+    # Initialize the pipeline
     dset = dataset_cls(urls, shardshuffle=shuffle, handler=handler)
 
     if not use_torchdata:
         dset = dset.repeat(repeat).shuffle(shuffle, initial=shuffle)
 
+    # Remove unused keys
     unused_key_filter = UnusedKeyFilter(keys=keys_to_remove)
     dset = dset.map(unused_key_filter, handler=handler)
 
     # TODO: organize this such that you don't always need video.
     # should work with audio-text, just text or whatever you might want
+    # Remove any examples missing a required key (default includes "txt", so make sure to reset this if that doesn't exist!)
     enforce_keys = [video_key] + enforce_additional_keys
     key_filter = KeyFilter(enforce_keys)
     dset = dset.select(key_filter)
@@ -170,6 +174,7 @@ def get_video_dataset(
         cut_adder = CutsAdder(cuts_key=cuts_key, video_key=video_key)
         dset = dset.map(cut_adder, handler=handler)
 
+    # TODO: what are these?
     aesthetics_filter = AestheticsFilter(aesthetic_thld=aesthetics_threshold)
     language_filter = LanguageFilter(languages=allowed_languages)
     unsafe_filter = UnsafeFilter(p_unsafe_threshold=p_unsafe_threshold)
@@ -177,6 +182,7 @@ def get_video_dataset(
     filters = [aesthetics_filter, language_filter, unsafe_filter]
 
     # Decoding
+    # add the decoding bit to the pipeline
     if video_decoder_cls is not None:
         dset = dset.decode(
             video_decoder_cls(**decoder_kwargs),
