@@ -58,7 +58,12 @@ To download the videos on todi, just run video2dataset with the [default downloa
 ```
 video2dataset --url_list="/store/swissai/a08/data/raw/hdvila/hd_vila.parquet" --config="/store/swissai/a08/containers/v2d/video2dataset/swiss_ai/configs/download_todi.yaml" --output_folder="/store/swissai/a08/data/raw/hdvila/hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
 ```
+OR with `srun`:
+```
+srun --overlap --jobid=<JOBID> --environment=v2d --container-workdir=$PWD video2dataset --url_list="/store/swissai/a08/data/raw/hdvila/hd_vila.parquet" --config="/store/swissai/a08/containers/v2d/video2dataset/swiss_ai/configs/download_todi.yaml" --output_folder="/store/swissai/a08/data/raw/hdvila/hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
+```
 
 This should run at a speed of roughly 500 videos/min or 40 GB/min. For further speedups, consider parallelizing over more nodes.
 
 Also, note that unlike in [dataset_examples/HDVILA.md](/dataset_examples/HDVILA.md) we're not performing cut detection while downloading (at least in the default clariden download config). Cut detection seemed to slow things down considerably and we rather want to perform any such processing on the final combined dataset.
+

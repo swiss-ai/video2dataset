@@ -32,4 +32,4 @@ distribution:
         cpus_per_task: 128 # 1 node has 288 cores total
         tasks_per_node: 2
         job_name: "v2d"
-        environment: "v2d"
+        environment: "/store/swissai/a08/containers/v2d/v2d.toml"

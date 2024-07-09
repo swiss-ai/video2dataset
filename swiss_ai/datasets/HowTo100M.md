@@ -13,3 +13,8 @@ While the python script will already download the videos, if you want to downloa
 ```
 video2dataset --url_list="/store/swissai/a08/data/raw/howto100m/v2d/howto100m_v2d_0_5000.csv" --config="/store/swissai/a08/containers/v2d/video2dataset/swiss_ai/configs/download_todi.yaml" --output_folder="/store/swissai/a08/data/raw/howto100m/v2d" --input_format="csv" --output_format="webdataset" --url_col="video_link" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
 ```
+
+OR with `srun`:
+```
+srun --overlap --jobid=<JOBID> --environment=v2d --container-workdir=$PWD video2dataset --url_list="/store/swissai/a08/data/raw/howto100m/v2d/howto100m_v2d_0_5000.csv" --config="/store/swissai/a08/containers/v2d/video2dataset/swiss_ai/configs/download_todi.yaml" --output_folder="/store/swissai/a08/data/raw/howto100m/v2d" --input_format="csv" --output_format="webdataset" --url_col="video_link" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
+```
