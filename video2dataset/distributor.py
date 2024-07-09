@@ -151,6 +151,7 @@ class SlurmDistributor:
         partition,
         n_nodes,
         account,
+        environment=None,
         gpus_per_node=0,
         tasks_per_node=1,
         nodelist=None,
@@ -166,6 +167,8 @@ class SlurmDistributor:
         self.n_nodes = n_nodes
         self.gpus_per_node = gpus_per_node
         self.account = account
+        self.environment = environment
+        print("ENV:", self.environment)
         self.tasks_per_node = tasks_per_node
         self.nodelist = nodelist
         self.constraint = constraint
@@ -217,7 +220,7 @@ class SlurmDistributor:
 {constraint}
 #SBATCH --open-mode append
 
-srun --account {self.account} bash {self.launcher_path}
+srun --environment={self.environment} --account {self.account} bash {self.launcher_path}
 
 """
 

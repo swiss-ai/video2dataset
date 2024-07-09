@@ -29,7 +29,7 @@ distribution:
         n_nodes: 4
         account: null
         cache_path: "./slurm_cache"
-        cpus_per_task: 128 # 1 node has 128 cores
-        tasks_per_node: 1
+        cpus_per_task: 128 # 1 node has 288 cores total
+        tasks_per_node: 2
         job_name: "v2d"
         environment: "v2d"

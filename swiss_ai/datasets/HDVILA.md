@@ -53,10 +53,10 @@ df.to_parquet("hd_vila.parquet")
 Once you run this, you should have a file `hd_vila.parquet` with all the relevant metadata.
 
 ## Download the Videos
-To download the videos on clariden, just run video2dataset with the [default download config for clariden](../configs/download_clariden.yaml): From the login node, execute the following command, adapting the paths if necessary
+To download the videos on todi, just run video2dataset with the [default download config for todi](../configs/download_todi.yaml): From the login node, execute the following command, adapting the paths if necessary
 
 ```
-video2dataset --url_list="hd_vila.parquet" --config="swiss_ai/configs/download_clariden.yaml" --output_folder="./hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
+video2dataset --url_list="/store/swissai/a08/data/raw/hdvila/hd_vila.parquet" --config="/store/swissai/a08/containers/v2d/video2dataset/swiss_ai/configs/download_todi.yaml" --output_folder="/store/swissai/a08/data/raw/hdvila/hd_vila_v2d" --input_format="parquet" --output_format="webdataset" --url_col="url" --encode_formats="{'video': 'mp4', 'audio':'m4a'}"
 ```
 
 This should run at a speed of roughly 500 videos/min or 40 GB/min. For further speedups, consider parallelizing over more nodes.
