@@ -158,7 +158,7 @@ class SlurmDistributor:
         constraint=None,
         exclude=None,
         cache_path=None,
-        timeout=1440,
+        timeout=240,
         verbose_wait=False,
     ):
         self.cpus_per_task = cpus_per_task

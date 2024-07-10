@@ -78,7 +78,7 @@ def main():
         video2dataset(
             url_list=csv_path,
             output_folder=out_dir,
-            config="swiss_ai/configs/download_clariden.yaml",
+            config="swiss_ai/configs/download_todi.yaml",
             input_format="csv",
             output_format="webdataset",
             url_col="video_link",

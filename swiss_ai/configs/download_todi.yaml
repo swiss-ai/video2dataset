@@ -29,7 +29,8 @@ distribution:
         n_nodes: 4
         account: null
         cache_path: "./slurm_cache"
-        cpus_per_task: 128 # 1 node has 288 cores total
+        cpus_per_task: 128 # 1 node has 288 cores total, so try 16 * 16 = 256 < 288
         tasks_per_node: 2
         job_name: "v2d"
         environment: "/store/swissai/a08/containers/v2d/v2d.toml"
+# NOTES: when cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 7 min to run for 1000 videos.
