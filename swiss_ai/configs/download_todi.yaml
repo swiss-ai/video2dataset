@@ -33,4 +33,9 @@ distribution:
         tasks_per_node: 2
         job_name: "v2d"
         environment: "/store/swissai/a08/containers/v2d/v2d.toml"
-# NOTES: when cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 7 min to run for 1000 videos.
+# NOTES:
+# (according to `sacct --format=JobID,JobName,State,Elapsed`)
+#   When cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 7 min to run for 1000 videos. (jobid=36187)
+#   When cpus_per_task=64 and tasks_per_node=4, with 4 nodes it took 12 min to run for 1000 videos. (jobid=36785)
+#   When cpus_per_task=32 and tasks_per_node=8, with 4 nodes it failed with "too many open files" to run for 5000 videos.
+# ***Thus, it seems like best bet is cpus_per_task=128 and tasks_per_node=2***.
