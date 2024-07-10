@@ -313,6 +313,7 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
                 print("You have not specified a timeout, defaulting to 2 weeks.")
                 timeout = 1.21e6
             else:
+                print(f"Timeout specified as {timeout} minutes to the v2d SlurmDistributor.")
                 timeout *= 60 # since self.timeout is in minutes, we need to convert it to seconds here
 
             status = self._wait_for_job_to_finish(job_id=job_id, timeout=timeout)
