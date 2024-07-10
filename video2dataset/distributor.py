@@ -307,14 +307,21 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
 
             print(f"waiting for job {job_id}")
 
-            timeout = self.timeout
+            # Option 1: We set the timeout for the SlurmDistributor to two weeks because our slurm manager 
+            # on the todi cluster should already manage the timeout for us, and we don't want any 
+            # prematurely killed jobs from SlurmDistributor thinking we're timed out!
+            timeout = 1.21e6
 
-            if timeout is None:
-                print("You have not specified a timeout, defaulting to 2 weeks.")
-                timeout = 1.21e6
-            else:
-                print(f"Timeout specified as {timeout} minutes to the v2d SlurmDistributor.")
-                timeout *= 60 # since self.timeout is in minutes, we need to convert it to seconds here
+            # Option 2: We set the timeout to be the same as what we pass to our slurm manager, 
+            # but I think this might still mess up if the job has to wait because the counter here in SlurmDistributor 
+            # seems like it would already start while jobs are still in queue?
+            # timeout = self.timeout
+            # if timeout is None:
+            #     print("You have not specified a timeout, defaulting to 2 weeks.")
+            #     timeout = 1.21e6
+            # else:
+            #     print(f"Timeout specified as {timeout} minutes to the v2d SlurmDistributor.")
+            #     timeout *= 60 # since self.timeout is in minutes, we need to convert it to seconds here
 
             status = self._wait_for_job_to_finish(job_id=job_id, timeout=timeout)
 
