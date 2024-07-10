@@ -161,6 +161,9 @@ class SlurmDistributor:
         timeout=240,
         verbose_wait=False,
     ):
+        """
+        timeout - This is the timeout in MINUTES.
+        """
         self.cpus_per_task = cpus_per_task
         self.job_name = job_name
         self.partition = partition
@@ -309,6 +312,8 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
             if timeout is None:
                 print("You have not specified a timeout, defaulting to 2 weeks.")
                 timeout = 1.21e6
+            else:
+                timeout *= 60 # since self.timeout is in minutes, we need to convert it to seconds here
 
             status = self._wait_for_job_to_finish(job_id=job_id, timeout=timeout)
 
@@ -326,6 +331,7 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
             return "exception occurred"
 
     def _wait_for_job_to_finish(self, job_id, timeout=30):
+        # This expects timeout in SECONDS
         t = time.time()
         while 1:
             if time.time() - t > timeout:
