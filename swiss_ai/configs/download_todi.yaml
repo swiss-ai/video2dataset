@@ -29,13 +29,14 @@ distribution:
         n_nodes: 4
         account: null
         cache_path: "./slurm_cache"
-        cpus_per_task: 128 # 1 node has 288 cores total, so try 16 * 16 = 256 < 288
-        tasks_per_node: 2
+        cpus_per_task: 256 # 1 node has 288 cores total
+        tasks_per_node: 1
         job_name: "v2d"
         environment: "/store/swissai/a08/containers/v2d/v2d.toml"
 # NOTES:
 # (according to `sacct --format=JobID,JobName,State,Elapsed`)
-#   When cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 7 min to run for 1000 videos. (jobid=36187)
+#   When cpus_per_task=256 and tasks_per_node=1, with 4 nodes it took 5 min to run for 1000 videos. (jobid=38589)
+#   When cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 6-7 min to run for 1000 videos. (jobid=36187)
 #   When cpus_per_task=64 and tasks_per_node=4, with 4 nodes it took 12 min to run for 1000 videos. (jobid=36785)
 #   When cpus_per_task=32 and tasks_per_node=8, with 4 nodes it failed with "too many open files" to run for 5000 videos.
 # ***Thus, it seems like best bet is cpus_per_task=128 and tasks_per_node=2***.
