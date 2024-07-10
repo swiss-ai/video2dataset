@@ -158,7 +158,7 @@ class SlurmDistributor:
         constraint=None,
         exclude=None,
         cache_path=None,
-        timeout=None,
+        timeout=1440,
         verbose_wait=False,
     ):
         self.cpus_per_task = cpus_per_task
@@ -213,6 +213,7 @@ class SlurmDistributor:
 #SBATCH --nodes={self.n_nodes}
 #SBATCH --ntasks-per-node={self.tasks_per_node}
 #SBATCH --cpus-per-task={self.cpus_per_task}
+#SBATCH --time={self.timeout}
 #SBATCH --exclusive
 {nodelist}
 {exclude}
