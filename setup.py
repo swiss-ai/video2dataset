@@ -12,6 +12,7 @@ if __name__ == "__main__":
             return [s.strip() for s in f.readlines() if (s.strip() and not s.startswith("#"))]
 
     REQUIREMENTS = _read_reqs("requirements.txt")
+    # REQUIREMENTS = _read_reqs("requirements_todi.txt")
 
     setup(
         name="video2dataset",

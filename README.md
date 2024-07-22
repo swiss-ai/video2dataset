@@ -243,6 +243,10 @@ You can also log in (or create an account) before by running `wandb login`.
 
 Either locally, or in [gitpod](https://gitpod.io/#https://github.com/iejMac/video2dataset) (do `export PIP_USER=false` there)
 
+FOR TODI: you need to use the `requirements_todi.txt`. To do this, uncomment the line setting `REQUIREMENTS = _read_reqs("requirements_todi.txt")` in `setup.py` first.
+
+FOR ANY OTHER SYSTEM: proceed as normal!
+
 Setup a virtualenv:
 
 ```bash
