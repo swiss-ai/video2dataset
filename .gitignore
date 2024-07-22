@@ -11,3 +11,4 @@ wandb
 **/dataset/*
 dist/
 build/
+slurm_cache/**

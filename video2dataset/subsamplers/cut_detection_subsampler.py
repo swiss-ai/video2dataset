@@ -1,8 +1,9 @@
 """
 cut detection subsampler detects cuts in a video
 """
+
 import numpy as np
-from scenedetect import ContentDetector, SceneManager, open_video
+from scenedetect import ContentDetector, AdaptiveDetector, SceneManager, open_video
 import os
 import tempfile
 
@@ -45,11 +46,23 @@ class CutDetectionSubsampler(Subsampler):
     - min_scene_len - minimum scene length to not drop a scene (see pyscenedeteect docs for more explanation)
     """
 
-    def __init__(self, cut_detection_mode="all", framerates=None, threshold=27, min_scene_len=15):
+    def __init__(
+        self,
+        algorithm="adaptive",
+        cut_detection_mode="all",
+        framerates=None,
+        threshold=27,
+        min_scene_len=15,
+        base_fps=30,
+    ):
         self.framerates = framerates
+
         self.cut_detection_mode = cut_detection_mode
         self.threshold = threshold
         self.min_scene_len = min_scene_len
+
+        self.base_fps = base_fps
+        self.algorithm = algorithm
 
     def __call__(self, streams, metadata=None):
         video_bytes = streams["video"][0]
@@ -61,24 +74,42 @@ class CutDetectionSubsampler(Subsampler):
                     f.write(video_bytes)
 
                 video = open_video(video_path)
+                original_fps = video.frame_rate
 
-                detector = ContentDetector(threshold=self.threshold, min_scene_len=self.min_scene_len)
+                # adapt self.min_scene_len based on deviation from base_fps
+                # so different fps don't affect cut detection behaviour
+                if self.base_fps:
+                    min_scene_len = int(
+                        self.min_scene_len * original_fps / self.base_fps
+                    )
+                else:
+                    min_scene_len = self.min_scene_len
+
+                if self.algorithm == "content":
+                    detector = ContentDetector(
+                        threshold=self.threshold, min_scene_len=min_scene_len
+                    )
+                elif self.algorithm == "adaptive":
+                    detector = AdaptiveDetector(
+                        adaptive_threshold=self.threshold, min_scene_len=min_scene_len
+                    )
+                else:
+                    raise ValueError("Other detection algorithm not implemented.")
                 scene_manager = SceneManager()
                 scene_manager.add_detector(detector)
                 scene_manager.auto_downscale = False
                 scene_manager.downscale = video.frame_size[0] // DEFAULT_MIN_WIDTH
 
-                cuts = {}
-                original_fps = video.frame_rate
-                cuts["original_fps"] = original_fps
-
+                cuts = {"original_fps": original_fps, "base_fps": self.base_fps}
                 scene_manager.detect_scenes(video=video)
-                cuts["cuts_original_fps"] = get_scenes_from_scene_manager(scene_manager, self.cut_detection_mode)
+                cuts["cuts_original_fps"] = get_scenes_from_scene_manager(
+                    scene_manager, self.cut_detection_mode
+                )
                 if self.framerates is not None:
                     for target_fps in self.framerates:
                         video.reset()
 
-                        detector = ContentDetector(threshold=self.threshold, min_scene_len=self.min_scene_len)
+                        # we can simply re-use the existing detector here.
                         scene_manager = SceneManager()
                         scene_manager.add_detector(detector)
                         frame_skip = max(

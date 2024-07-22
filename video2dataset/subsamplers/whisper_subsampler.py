@@ -3,6 +3,7 @@ Whisper subsampler - transcribes audio using the Whisper model from OAI using Wh
 
 code: https://github.com/m-bain/whisperX
 """
+
 import os
 import time
 import tempfile
@@ -33,23 +34,56 @@ class WhisperSubsampler(Subsampler):
         compute_type="float16",
         download_root=None,
         is_slurm_task=False,
+        force_cpu=False,
+        language=None,
+        align=False,
     ):
+        print("INIT WHISPER")
+        self.language = language
         if is_slurm_task:
             global_rank = os.environ["GLOBAL_RANK"]
             if global_rank != 0:
                 time.sleep(20)  # let master worker download model
 
-            device, device_index = "cuda", int(os.environ["LOCAL_RANK"])
+            self.device, device_index = "cuda", int(os.environ["LOCAL_RANK"])
+            if force_cpu:
+                self.device = "cpu"
+                device_index = 0
+            options = {
+                "max_new_tokens": None,
+                "clip_timestamps": None,
+                "hallucination_silence_threshold": None,
+                "hotwords": None,
+                # "word_timestamps": True,
+                # "without_timestamps": False
+            }
             while True:
                 try:
                     self.model = whisperx.load_model(
                         model_name,
-                        device=device,
+                        device=self.device,
                         device_index=device_index,
                         compute_type=compute_type,
                         download_root=download_root,
+                        language=self.language,
+                        asr_options=options,
                     )
                     print("model_loaded", os.environ["GLOBAL_RANK"], flush=True)
+                    if not self.language:
+                        raise ValueError("Alignment needs a language code!")
+                    if align:
+                        self.align_model, self.align_metadata = (
+                            whisperx.load_align_model(
+                                language_code=self.language, device=self.device
+                            )
+                        )
+                        print(
+                            "align_model_loaded", os.environ["GLOBAL_RANK"], flush=True
+                        )
+                        print(self.align_model, self.align_metadata)
+                    else:
+                        self.align_model = None
+
                     break
                 except Exception as e:  # pylint: disable=(broad-except)
                     print(str(e), flush=True)
@@ -60,13 +94,22 @@ class WhisperSubsampler(Subsampler):
                     )
                     continue
         else:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
             self.model = whisperx.load_model(
                 model_name,
-                device=device,
+                device=self.device,
                 compute_type=compute_type,
                 download_root=download_root,
+                language=self.language,
+                asr_options=options,
             )
+            if align:
+                if not self.language:
+                    raise ValueError("Alignment needs a language code!")
+                self.align_model, self.align_metadata = whisperx.load_align_model(
+                    language_code=self.language, device=self.device
+                )
 
         self.batch_size = batch_size
 
@@ -80,8 +123,21 @@ class WhisperSubsampler(Subsampler):
                     tmpfile.write(aud_bytes)
                     tmpfile.flush()  # ensure all data is written
                     audio = whisperx.load_audio(tmpfile.name)
-                    result = self.model.transcribe(audio, batch_size=self.batch_size)
+                    result = self.model.transcribe(
+                        audio, batch_size=self.batch_size, language=self.language
+                    )
                     metadata[i]["whisper_transcript"] = result
+
+                    if self.align_model:
+                        align_result = whisperx.align(
+                            result["segments"],
+                            self.align_model,
+                            self.align_metadata,
+                            audio,
+                            self.device,
+                            return_char_alignments=False,
+                        )
+                        metadata[i]["whisper_alignment"] = align_result
             except Exception as err:  # pylint: disable=broad-except
                 return [], metadata, str(err)
 

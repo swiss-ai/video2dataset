@@ -11,7 +11,7 @@ import tempfile
 from typing import Any, Union, List, Tuple, Dict, Literal, cast
 
 from video2dataset.subsamplers.subsampler import Subsampler
-from video2dataset.types import EncodeFormats, Streams
+from video2dataset.v2d_types import EncodeFormats, Streams
 
 
 ClipSpan = List[float]  # [start, end]
@@ -108,23 +108,23 @@ def _collate_clip_spans(clip_spans: List[ClipSpan]) -> Tuple[str, List[int]]:
 def _process_stream(
     tmpdir: Any,  # BytesPath
     stream_bytes: bytes,
-    encode_format: str,
+    encode_formats: str,
     ffmpeg_kwargs: dict,
 ) -> List[str]:
     """Processes a stream into clips using ffmpeg"""
     # TODO: we need to put the extension into the metadata
     # TODO: This can be done better using pipes I just don't feel like sinking too much time into this rn
-    with open(os.path.join(tmpdir, f"input.{encode_format}"), "wb") as f:
+    with open(os.path.join(tmpdir, f"input.{encode_formats}"), "wb") as f:
         f.write(stream_bytes)
     try:
         (
-            ffmpeg.input(f"{tmpdir}/input.{encode_format}")
-            .output(f"{tmpdir}/clip_%d.{encode_format}", **ffmpeg_kwargs)
+            ffmpeg.input(f"{tmpdir}/input.{encode_formats}")
+            .output(f"{tmpdir}/clip_%d.{encode_formats}", **ffmpeg_kwargs)
             .run(capture_stdout=True, quiet=True)
         )
     except Exception as err:  # pylint: disable=broad-except
         raise err
-    stream_clips = glob.glob(f"{tmpdir}/clip*.{encode_format}")
+    stream_clips = glob.glob(f"{tmpdir}/clip*.{encode_formats}")
     stream_clips.sort(key=lambda x: int(x.split("_")[-1].split(".")[0]))
     return stream_clips
 

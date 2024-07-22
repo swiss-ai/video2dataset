@@ -26,3 +26,5 @@ Pillow
 accelerate
 bitsandbytes
 scipy
+
+whisperx

@@ -32,7 +32,7 @@ class ResolutionSubsampler(Subsampler):
         height: int = -1,
         width: int = -1,
         video_size: int = -1,
-        encode_format: str = "mp4",
+        encode_formats: str = "mp4",
     ):
         if video_size > 0 and (height > 0 or width > 0):
             raise ValueError("Either set video_size, or set height and/or width")
@@ -40,7 +40,7 @@ class ResolutionSubsampler(Subsampler):
         self.height = height if video_size < 0 else video_size
         self.width = width if video_size < 0 else video_size
         self.video_size = video_size
-        self.encode_format = encode_format
+        self.encode_formats = encode_formats
 
     def __call__(self, streams, metadata=None):
         video_bytes = streams["video"]
