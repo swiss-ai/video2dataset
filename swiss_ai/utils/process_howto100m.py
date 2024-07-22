@@ -14,10 +14,10 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-P", "--raw_zip_path", type=str, default="/cluster/work/cotterell/mm_swissai/datasets/howto100m/HowTo100M.zip"
+        "-P", "--raw_zip_path", type=str, default="/store/swissai/a08/data/raw/HowTo100M.zip"
     )
     parser.add_argument(
-        "-O", "--out_dir", type=str, default="/cluster/work/cotterell/mm_swissai/datasets/howto100m/v2d"
+        "-O", "--out_dir", type=str, default="/store/swissai/a08/data/raw/howto100m/v2d"
     )
     parser.add_argument("-S", "--start_idx", type=int, default=0)
     parser.add_argument("-E", "--end_idx", type=int)
@@ -78,7 +78,7 @@ def main():
         video2dataset(
             url_list=csv_path,
             output_folder=out_dir,
-            config="swiss_ai/configs/download_clariden.yaml",
+            config="swiss_ai/configs/download_todi.yaml",
             input_format="csv",
             output_format="webdataset",
             url_col="video_link",

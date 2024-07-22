@@ -1,0 +1,43 @@
+subsampling: {}
+
+reading:
+    yt_args:
+        download_size: 720 # 360?
+        download_audio_rate: 44100
+        video_codec: "avc1"
+        fps: 20
+        yt_metadata_args:
+            writesubtitles: 'all'
+            subtitleslangs: ['en']
+            writeautomaticsub: True
+            get_info: True
+    timeout: 60
+    sampler: null
+
+storage:
+    number_sample_per_shard: 20  # TBD what the best number is, for now making it smaller for improved parallelism # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
+    oom_shard_count: 10
+    captions_are_subtitles: False
+
+distribution:
+    processes_count: 128
+    thread_count: 16
+    subjob_size: 10000 # seems not to be used (only for pyspark)
+    distributor: "slurm"
+    distributor_args:
+        partition: "normal"
+        n_nodes: 1
+        account: null
+        cache_path: "./slurm_cache"
+        cpus_per_task: 256 # 1 node has 288 cores total
+        tasks_per_node: 1
+        job_name: "v2d"
+        environment: "/store/swissai/a08/containers/v2d/v2d.toml"
+# NOTES:
+# (according to `sacct --format=JobID,JobName,State,Elapsed`)
+#   When cpus_per_task=256 and tasks_per_node=1, with 1 nodes it took 5-6 min to run for 1000 videos. (jobids=39660)
+#   When cpus_per_task=256 and tasks_per_node=1, with 4 nodes it took 5 min to run for 1000 videos. (jobids=38589, 39203)
+#   When cpus_per_task=128 and tasks_per_node=2, with 4 nodes it took 6-7 min to run for 1000 videos. (jobid=36187)
+#   When cpus_per_task=64 and tasks_per_node=4, with 4 nodes it took 12 min to run for 1000 videos. (jobid=36785)
+#   When cpus_per_task=32 and tasks_per_node=8, with 4 nodes it failed with "too many open files" to run for 5000 videos.
+# ***Thus, it seems like best bet is cpus_per_task=128 and tasks_per_node=2***.
