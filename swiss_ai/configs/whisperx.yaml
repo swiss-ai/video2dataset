@@ -4,7 +4,7 @@ subsampling:
             # TODO: adapt/test for GPU setup
             model_name: "tiny"
             compute_type: float32
-            force_cpu: True
+            force_cpu: False
             language: "en"
             align: True
 
@@ -23,7 +23,7 @@ reading:
     sampler: null
 
 storage:
-    number_sample_per_shard: 100  # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
+    number_sample_per_shard: 20  # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
     oom_shard_count: 10
     captions_are_subtitles: False
 
@@ -35,8 +35,10 @@ distribution:
     distributor_args:
         partition: "normal"
         n_nodes: 1
-        account: null  # FIXME: set this to your slurm account
+        account: es_cott  # FIXME: set this to your slurm account
         cache_path: "./slurm_cache"
         cpus_per_task: 32 # 1 node has 128 cores
         tasks_per_node: 1
         job_name: "v2d-whisperx"
+        gpus_per_node: 1
+        # gpu_mem: "24g"

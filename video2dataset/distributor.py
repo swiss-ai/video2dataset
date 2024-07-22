@@ -153,6 +153,7 @@ class SlurmDistributor:
         account,
         environment=None,
         gpus_per_node=0,
+        gpu_mem="12gb",
         tasks_per_node=1,
         nodelist=None,
         constraint=None,
@@ -169,6 +170,7 @@ class SlurmDistributor:
         self.partition = partition
         self.n_nodes = n_nodes
         self.gpus_per_node = gpus_per_node
+        self.gpu_mem = gpu_mem
         self.account = account
         self.environment = environment
         print("ENV:", self.environment)
@@ -209,7 +211,7 @@ class SlurmDistributor:
         exclude = ("#SBATCH --exclude " + self.exclude) if self.exclude is not None else ""
         account = ("#SBATCH --account " + self.account) if self.account is not None else ""
         constraint = ("#SBATCH --constraint " + self.constraint) if self.constraint is not None else ""
-        return f"""#!/bin/bash
+        cmd = f"""#!/bin/bash
 #SBATCH --partition={self.partition}
 #SBATCH --job-name={self.job_name}
 #SBATCH --output={self.cache_path}/slurm-%x_%j.out
@@ -223,10 +225,15 @@ class SlurmDistributor:
 {account}
 {constraint}
 #SBATCH --open-mode append
-
-srun --environment={self.environment} --account {self.account} bash {self.launcher_path}
-
 """
+        if self.gpus_per_node > 0:
+            cmd += f"\n#SBATCH --gpus={self.gpus_per_node}"
+            # cmd += f"\n#SBATCH --mem-per-gpu={self.gpu_mem}"
+
+        # cmd += f"\nsrun --environment={self.environment} --account {self.account} bash {self.launcher_path}"
+        # TODO: use version above for todi.
+        cmd += f"\nsrun --account {self.account} bash {self.launcher_path}"
+        return cmd
 
     def _make_launch_cpu(
         self,

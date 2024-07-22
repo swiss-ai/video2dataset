@@ -123,10 +123,13 @@ class WhisperSubsampler(Subsampler):
                     tmpfile.write(aud_bytes)
                     tmpfile.flush()  # ensure all data is written
                     audio = whisperx.load_audio(tmpfile.name)
+                    print("run whisper!")
+
                     result = self.model.transcribe(
                         audio, batch_size=self.batch_size, language=self.language
                     )
                     metadata[i]["whisper_transcript"] = result
+                    print(result)
 
                     if self.align_model:
                         align_result = whisperx.align(
@@ -137,6 +140,7 @@ class WhisperSubsampler(Subsampler):
                             self.device,
                             return_char_alignments=False,
                         )
+                        print(align_result)
                         metadata[i]["whisper_alignment"] = align_result
             except Exception as err:  # pylint: disable=broad-except
                 return [], metadata, str(err)
