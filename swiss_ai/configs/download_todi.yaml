@@ -15,7 +15,7 @@ reading:
     sampler: null
 
 storage:
-    number_sample_per_shard: 100  # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
+    number_sample_per_shard: 20  # TBD what the best number is, for now making it smaller for improved parallelism # reduce this if you're not downloading thousands of videos to allow for enough parallelsim
     oom_shard_count: 10
     captions_are_subtitles: False
 
