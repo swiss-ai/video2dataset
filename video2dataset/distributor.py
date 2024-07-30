@@ -160,6 +160,7 @@ class SlurmDistributor:
         exclude=None,
         cache_path=None,
         timeout=240,
+        reservation=None,
         verbose_wait=False,
     ):
         """
@@ -183,6 +184,7 @@ class SlurmDistributor:
             cache_path = ".video2dataset_cache/"
         self.timeout = timeout
         self.verbose_wait = verbose_wait
+        self.reservation = reservation
 
         self.fs, self.cache_path = fsspec.core.url_to_fs(cache_path)
         if not self.fs.exists(self.cache_path):
@@ -211,6 +213,7 @@ class SlurmDistributor:
         exclude = ("#SBATCH --exclude " + self.exclude) if self.exclude is not None else ""
         account = ("#SBATCH --account " + self.account) if self.account is not None else ""
         constraint = ("#SBATCH --constraint " + self.constraint) if self.constraint is not None else ""
+        reservation = ("#SBATCH --reservation " + self.reservation) if self.reservation is not None else ""
         cmd = f"""#!/bin/bash
 #SBATCH --partition={self.partition}
 #SBATCH --job-name={self.job_name}
@@ -220,19 +223,23 @@ class SlurmDistributor:
 #SBATCH --cpus-per-task={self.cpus_per_task}
 #SBATCH --time={self.timeout}
 #SBATCH --exclusive
+
 {nodelist}
 {exclude}
 {account}
 {constraint}
+{reservation}
 #SBATCH --open-mode append
 """
         if self.gpus_per_node > 0:
             cmd += f"\n#SBATCH --gpus={self.gpus_per_node}"
             # cmd += f"\n#SBATCH --mem-per-gpu={self.gpu_mem}"
 
-        # cmd += f"\nsrun --environment={self.environment} --account {self.account} bash {self.launcher_path}"
-        # TODO: use version above for todi.
-        cmd += f"\nsrun --account {self.account} bash {self.launcher_path}"
+        cmd += f"\nsrun --environment={self.environment} --reservation=todi --account {self.account} bash {self.launcher_path}"
+        # TODO: use below version for Euler.
+        if self.reservation:
+            cmd += f"\nsrun --environment={self.environment} --reservation={self.reservation} --account {self.account} bash {self.launcher_path}"
+        # cmd += f"\nsrun --account {self.account} bash {self.launcher_path} --reservation=todi"
         return cmd
 
     def _make_launch_cpu(
