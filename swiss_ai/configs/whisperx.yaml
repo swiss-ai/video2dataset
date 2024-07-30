@@ -7,6 +7,7 @@ subsampling:
             force_cpu: False
             language: "en"
             align: True
+            batch_size: 128
 
 reading:
     yt_args:

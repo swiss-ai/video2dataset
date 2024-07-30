@@ -6,6 +6,9 @@ subsampling:
             framerates: null
             # see https://www.scenedetect.com/docs/latest/api/detectors.html#module-scenedetect.detectors
             threshold: 5
+            # XXX: Normalized to work in the same way with videos of different fps.
+            # XXX: So it behaves the same way for e.g., 30 and 60fps. Base fps is 30.
+            # XXX: Thus: min_scene_len=30 --> min. 1 second, min_scene_len=60 --> min. 2 seconds, ..
             min_scene_len: 30
             algorithm: "adaptive"
 
