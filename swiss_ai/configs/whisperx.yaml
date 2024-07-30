@@ -36,10 +36,11 @@ distribution:
     distributor_args:
         partition: "normal"
         n_nodes: 1
-        account: es_cott  # FIXME: set this to your slurm account
+        account: null  # FIXME: set this to your slurm account
         cache_path: "./slurm_cache"
         cpus_per_task: 32 # 1 node has 128 cores
         tasks_per_node: 1
         job_name: "v2d-whisperx"
         gpus_per_node: 1
-        # gpu_mem: "24g"
+        reservation: "todi"
+        environment: "/store/swissai/a08/containers/v2d/v2d.toml"
