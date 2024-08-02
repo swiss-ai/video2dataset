@@ -258,10 +258,11 @@ class SlurmDistributor:
             cmd += f"\n#SBATCH --gpus={self.gpus_per_node}"
             # cmd += f"\n#SBATCH --mem-per-gpu={self.gpu_mem}"
 
-        cmd += f"\nsrun --environment={self.environment} --reservation=todi --account {self.account} bash {self.launcher_path}"
-        # TODO: use below version for Euler.
-        if self.reservation:
+        if not self.reservation:
+            cmd += f"\nsrun --environment={self.environment} --reservation=todi --account {self.account} bash {self.launcher_path}"
+        else:
             cmd += f"\nsrun --environment={self.environment} --reservation={self.reservation} --account {self.account} bash {self.launcher_path}"
+        # TODO: use below version for Euler.
         # cmd += f"\nsrun --account {self.account} bash {self.launcher_path} --reservation=todi"
         return cmd
 
@@ -277,10 +278,12 @@ class SlurmDistributor:
             conda_env = os.environ.get("CONDA_ENV", os.environ.get("CONDA_PREFIX"))
             if conda_env:
                 venv_activate = f"conda activate {conda_env}"
+           #  else:
+           #      raise ValueError(
+           #          "You need to specify either a virtual environment or a conda environment."
+           #     )
             else:
-                raise ValueError(
-                    "You need to specify either a virtual environment or a conda environment."
-                )
+                venv_activate = ""
 
         cdir = os.path.abspath(os.path.dirname(__file__))
         script = os.path.join(cdir, "slurm_executor.py")

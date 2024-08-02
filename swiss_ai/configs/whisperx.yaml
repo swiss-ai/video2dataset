@@ -29,8 +29,8 @@ storage:
     captions_are_subtitles: False
 
 distribution:
-    processes_count: 32
-    thread_count: 16
+    processes_count: 4
+    thread_count: 1
     subjob_size: 10000 # seems not to be used (only for pyspark)
     distributor: "slurm"
     distributor_args:
@@ -38,9 +38,9 @@ distribution:
         n_nodes: 1
         account: null  # FIXME: set this to your slurm account
         cache_path: "./slurm_cache"
-        cpus_per_task: 32 # 1 node has 128 cores
+        cpus_per_task: 4 # 1 node has 128 cores
         tasks_per_node: 1
         job_name: "v2d-whisperx"
-        gpus_per_node: 1
+        # gpus_per_node: 1
         reservation: "todi"
         environment: "/store/swissai/a08/containers/v2d/v2d.toml"
