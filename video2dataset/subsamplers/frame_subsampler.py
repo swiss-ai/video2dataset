@@ -23,7 +23,7 @@ class FrameSubsampler(Subsampler):
             yt_subtitle: temporary special case where you want a frame at the beginning of each yt_subtitle
                          we will want to turn this into something like frame_timestamps and introduce
                          this as a fusing option with clipping_subsampler
-        encode_format (str): Format to encode in (i.e. mp4)
+        encode_formats (str): Format to encode in (i.e. mp4)
 
     TODO: n_frame
     TODO: generalize interface, should be like (frame_rate, n_frames, sampler, output_format)

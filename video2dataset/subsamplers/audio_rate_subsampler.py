@@ -18,7 +18,7 @@ class AudioRateSubsampler:
 
     def __init__(self, sample_rate, encode_format, n_audio_channels=None):
         self.sample_rate = sample_rate
-        self.encode_format = encode_format
+        self.encode_formats = encode_formats
         self.n_audio_channels = n_audio_channels
 
     def __call__(self, streams, metadata=None):
@@ -28,7 +28,7 @@ class AudioRateSubsampler:
             with tempfile.TemporaryDirectory() as tmpdir:
                 with open(os.path.join(tmpdir, "input.m4a"), "wb") as f:
                     f.write(aud_bytes)
-                ext = self.encode_format
+                ext = self.encode_formats
                 try:
                     # TODO: for now assuming m4a, change this
                     ffmpeg_args = {"ar": str(self.sample_rate), "f": ext}

@@ -1,4 +1,5 @@
 """distributor defines the distribution strategies for img2dataset"""
+
 import os
 import time
 import subprocess
@@ -41,7 +42,9 @@ def no_distributor(process_count, worker, input_sharder, _, max_shard_retry):  #
     retrier(run, failed_shards, max_shard_retry)
 
 
-def multiprocessing_distributor(processes_count, worker, input_sharder, _, max_shard_retry):
+def multiprocessing_distributor(
+    processes_count, worker, input_sharder, _, max_shard_retry
+):
     """Distribute the work to the processes using multiprocessing"""
     ctx = get_context("spawn")
     with ctx.Pool(processes_count, maxtasksperchild=5) as process_pool:
@@ -62,7 +65,9 @@ def multiprocessing_distributor(processes_count, worker, input_sharder, _, max_s
         del process_pool
 
 
-def pyspark_distributor(processes_count, worker, input_sharder, subjob_size, max_shard_retry):
+def pyspark_distributor(
+    processes_count, worker, input_sharder, subjob_size, max_shard_retry
+):
     """Distribute the work to the processes using pyspark"""
 
     with _spark_session(processes_count) as spark:
@@ -153,12 +158,14 @@ class SlurmDistributor:
         account,
         environment=None,
         gpus_per_node=0,
+        gpu_mem="12gb",
         tasks_per_node=1,
         nodelist=None,
         constraint=None,
         exclude=None,
         cache_path=None,
         timeout=240,
+        reservation=None,
         verbose_wait=False,
     ):
         """
@@ -169,6 +176,7 @@ class SlurmDistributor:
         self.partition = partition
         self.n_nodes = n_nodes
         self.gpus_per_node = gpus_per_node
+        self.gpu_mem = gpu_mem
         self.account = account
         self.environment = environment
         print("ENV:", self.environment)
@@ -181,6 +189,7 @@ class SlurmDistributor:
             cache_path = ".video2dataset_cache/"
         self.timeout = timeout
         self.verbose_wait = verbose_wait
+        self.reservation = reservation
 
         self.fs, self.cache_path = fsspec.core.url_to_fs(cache_path)
         if not self.fs.exists(self.cache_path):
@@ -189,11 +198,15 @@ class SlurmDistributor:
         self.timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
         # save worker args to file (this is written by the slurm_executor)
-        self.worker_args_as_file = os.path.join(self.cache_path, f"{self.timestamp}_worker_args.yaml")
+        self.worker_args_as_file = os.path.join(
+            self.cache_path, f"{self.timestamp}_worker_args.yaml"
+        )
         with self.fs.open(self.worker_args_as_file, "w", encoding="utf-8") as f:
             yaml.dump(worker_args, f, default_flow_style=False)
 
-        self.launcher_path = os.path.join(self.cache_path, self.timestamp + "_launcher.sh")
+        self.launcher_path = os.path.join(
+            self.cache_path, self.timestamp + "_launcher.sh"
+        )
         with self.fs.open(self.launcher_path, "w", encoding="utf-8") as launcher_file:
             launcher_file.write(self._make_launch_cpu())
 
@@ -205,11 +218,26 @@ class SlurmDistributor:
         print(f"Wrote sbatch to {self.sbatch_path}")
 
     def _make_sbatch(self):
-        nodelist = ("#SBATCH --nodelist " + self.nodelist) if self.nodelist is not None else ""
-        exclude = ("#SBATCH --exclude " + self.exclude) if self.exclude is not None else ""
-        account = ("#SBATCH --account " + self.account) if self.account is not None else ""
-        constraint = ("#SBATCH --constraint " + self.constraint) if self.constraint is not None else ""
-        return f"""#!/bin/bash
+        nodelist = (
+            ("#SBATCH --nodelist " + self.nodelist) if self.nodelist is not None else ""
+        )
+        exclude = (
+            ("#SBATCH --exclude " + self.exclude) if self.exclude is not None else ""
+        )
+        account = (
+            ("#SBATCH --account " + self.account) if self.account is not None else ""
+        )
+        constraint = (
+            ("#SBATCH --constraint " + self.constraint)
+            if self.constraint is not None
+            else ""
+        )
+        reservation = (
+            ("#SBATCH --reservation " + self.reservation)
+            if self.reservation is not None
+            else ""
+        )
+        cmd = f"""#!/bin/bash
 #SBATCH --partition={self.partition}
 #SBATCH --job-name={self.job_name}
 #SBATCH --output={self.cache_path}/slurm-%x_%j.out
@@ -218,15 +246,25 @@ class SlurmDistributor:
 #SBATCH --cpus-per-task={self.cpus_per_task}
 #SBATCH --time={self.timeout}
 #SBATCH --exclusive
+
 {nodelist}
 {exclude}
 {account}
 {constraint}
+{reservation}
 #SBATCH --open-mode append
-
-srun --environment={self.environment} --account {self.account} bash {self.launcher_path}
-
 """
+        if self.gpus_per_node > 0:
+            cmd += f"\n#SBATCH --gpus={self.gpus_per_node}"
+            # cmd += f"\n#SBATCH --mem-per-gpu={self.gpu_mem}"
+
+        if not self.reservation:
+            cmd += f"\nsrun --environment={self.environment} --reservation=todi --account {self.account} bash {self.launcher_path}"
+        else:
+            cmd += f"\nsrun --environment={self.environment} --reservation={self.reservation} --account {self.account} bash {self.launcher_path}"
+        # TODO: use below version for Euler.
+        # cmd += f"\nsrun --account {self.account} bash {self.launcher_path} --reservation=todi"
+        return cmd
 
     def _make_launch_cpu(
         self,
@@ -240,8 +278,12 @@ srun --environment={self.environment} --account {self.account} bash {self.launch
             conda_env = os.environ.get("CONDA_ENV", os.environ.get("CONDA_PREFIX"))
             if conda_env:
                 venv_activate = f"conda activate {conda_env}"
+           #  else:
+           #      raise ValueError(
+           #          "You need to specify either a virtual environment or a conda environment."
+           #     )
             else:
-                raise ValueError("You need to specify either a virtual environment or a conda environment.")
+                venv_activate = ""
 
         cdir = os.path.abspath(os.path.dirname(__file__))
         script = os.path.join(cdir, "slurm_executor.py")
@@ -307,13 +349,13 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
 
             print(f"waiting for job {job_id}")
 
-            # Option 1: We set the timeout for the SlurmDistributor to two weeks because our slurm manager 
-            # on the todi cluster should already manage the timeout for us, and we don't want any 
+            # Option 1: We set the timeout for the SlurmDistributor to two weeks because our slurm manager
+            # on the todi cluster should already manage the timeout for us, and we don't want any
             # prematurely killed jobs from SlurmDistributor thinking we're timed out!
             timeout = 1.21e6
 
-            # Option 2: We set the timeout to be the same as what we pass to our slurm manager, 
-            # but I think this might still mess up if the job has to wait because the counter here in SlurmDistributor 
+            # Option 2: We set the timeout to be the same as what we pass to our slurm manager,
+            # but I think this might still mess up if the job has to wait because the counter here in SlurmDistributor
             # seems like it would already start while jobs are still in queue?
             # timeout = self.timeout
             # if timeout is None:
@@ -354,4 +396,7 @@ python {script} --worker_args {self.worker_args_as_file} --node_id $SLURM_NODEID
         if self.verbose_wait:
             print(f"job status is {status}")
 
-        return status == "slurm_load_jobs error: Invalid job id specified" or len(status.split("\n")) == 2
+        return (
+            status == "slurm_load_jobs error: Invalid job id specified"
+            or len(status.split("\n")) == 2
+        )

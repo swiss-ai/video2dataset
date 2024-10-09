@@ -28,7 +28,7 @@ from video2dataset.distributor import (
 )
 from video2dataset.workers import DownloadWorker, SubsetWorker, OpticalFlowWorker, CaptionWorker, WhisperWorker
 from video2dataset.configs import CONFIGS
-from video2dataset.types import EncodeFormats
+from video2dataset.v2d_types import EncodeFormats
 
 
 def identity(x):

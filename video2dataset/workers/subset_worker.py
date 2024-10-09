@@ -21,7 +21,7 @@ from video2dataset.subsamplers import (
     ResolutionSubsampler,
     AudioRateSubsampler,
 )
-from video2dataset.types import EncodeFormats, Streams
+from video2dataset.v2d_types import EncodeFormats, Streams
 
 
 def get_subsamplers(config: dict, encode_formats: EncodeFormats):
