@@ -5,29 +5,57 @@ import json
 import time
 from datasets import load_dataset
 from tqdm import tqdm
+import sys
 
-def download_and_tar_videos(num_videos_per_tar, output_dir, download_all=False, max_videos=20):
+
+def skip_samples(dataset, num_to_skip):
     """
-    Function to download and tar videos in batches.
+    Skip the first num_to_skip samples from the dataset iterator.
+    """
+    for _ in tqdm(range(num_to_skip), desc="Skipping samples"):
+        next(dataset)
+
+
+def download_and_tar_videos(num_videos_per_tar, output_dir, download_all=False, max_videos=20, start_from_tar=0):
+    """
+    Function to download and tar videos in batches, with an option to resume from a specified tar file.
     """
     # Load dataset in streaming mode
     dataset = load_dataset("HuggingFaceFV/finevideo", split="train", streaming=True)
     
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
+    print('starting to download to', output_dir)
     
+    sys.stdout.flush()
     # Initialize variables
-    video_count = 0
-    tar_file_count = 0  # This will be the starting 10-digit number for the tar files
+    video_count = 0 # start_from_tar * num_videos_per_tar  # Calculate the video count from the tar number
+    tar_file_count = start_from_tar  # Start from the specified tar file number
     tar_filename = os.path.join(output_dir, f'{tar_file_count:010}.tar')
     
-    # Open the first tar file
-    tar = tarfile.open(tar_filename, 'w')
+    # Calculate how many videos to skip based on tar file and videos per tar
+    num_videos_to_skip = start_from_tar * num_videos_per_tar
+    start_time = time.time()
 
+
+    # Open a new tar file if continuing from the specified tar
+    tar = tarfile.open(tar_filename, 'w')
+    
     # Iterate through the dataset
     for sample in dataset:
+        # Skip samples until reaching the starting video count
+        if video_count < num_videos_to_skip:
+            # 
+            if video_count % 100 == 0:
+                curr_time = time.time()
+                print(f"Skipped {video_count} samples in {curr_time - start_time:.2f} seconds")
+                sys.stdout.flush()
+            
+            video_count += 1
+            continue
+        
         # Break if we reach the limit (for testing purposes)
-        if not download_all and video_count == max_videos:
+        if not download_all and video_count >= max_videos:
             break
         
         # Define 16-digit filenames for video and JSON metadata
@@ -57,16 +85,10 @@ def download_and_tar_videos(num_videos_per_tar, output_dir, download_all=False, 
         # Close current tar and start a new one when reaching num_videos_per_tar
         if video_count % num_videos_per_tar == 0:
             tar.close()
-            
-            
-            #print(f"{tar_filename} has been created with {num_videos_per_tar} videos.")
-            
+            print(f"{tar_filename} has been created with {num_videos_per_tar} videos.")
+            sys.stdout.flush()
             # Update tar filename and open a new tar file (increment the tar file count)
             tar_file_count += 1
-            
-            if tar_file_count % 5 == 0:
-                print(f"{tar_filename} has been created with {num_videos_per_tar} videos.")
-
             tar_filename = os.path.join(output_dir, f'{tar_file_count:010}.tar')
             tar = tarfile.open(tar_filename, 'w')
 
@@ -74,10 +96,11 @@ def download_and_tar_videos(num_videos_per_tar, output_dir, download_all=False, 
     if video_count % num_videos_per_tar != 0:
         tar.close()
         print(f"{tar_filename} has been created with remaining videos.")
-
-def estimate_job_time(num_videos_per_tar, output_dir, num_batches=10):
+        sys.stdout.flush()
+        
+def estimate_job_time(num_videos_per_tar, output_dir, num_batches=20):
     """
-    Function to estimate time taken for downloading 10 tar batches.
+    Function to estimate time taken for downloading 20 tar batches.
     """
     # Load dataset in streaming mode
     dataset = load_dataset("HuggingFaceFV/finevideo", split="train", streaming=True)
@@ -123,18 +146,19 @@ def estimate_job_time(num_videos_per_tar, output_dir, num_batches=10):
             
             start_time = time.time()
         
-        # Stop after 10 batches
+        # Stop after 20 batches
         if tar_file_count == num_batches:
             break
 
 if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Download and tar videos from Hugging Face dataset in streaming mode.")
-    parser.add_argument('--num_videos_per_tar', default=10, type=int, help="Number of videos to bundle into one tar file.")
+    parser.add_argument('--num_videos_per_tar', default=4, type=int, help="Number of videos to bundle into one tar file.")
     parser.add_argument('--output_dir', type=str, required=True, help="Directory where the tar files will be stored.")
     parser.add_argument('--download_all', action='store_true', help="Whether to download all videos (default is to download only a few for testing).")
-    parser.add_argument('--max_videos', type=int, default=1000, help="Max number of videos to download for testing purposes (only applicable if --download_all is not set).")
-    parser.add_argument('--estimate', action='store_true', help="Run the job time estimation for 10 tar batches.")
+    parser.add_argument('--max_videos', type=int, default=10, help="Max number of videos to download for testing purposes (only applicable if --download_all is not set).")
+    parser.add_argument('--estimate', action='store_true', help="Run the job time estimation for 20 tar batches.")
+    parser.add_argument('--start_from_tar', type=int, default=0, help="Start downloading from a specific tar file number (default is 0).")
     
     args = parser.parse_args()
 
@@ -142,10 +166,5 @@ if __name__ == "__main__":
         # Run time estimation
         estimate_job_time(args.num_videos_per_tar, args.output_dir)
     else:
-        # Run the main function
-        print("starting to download")
-        download_and_tar_videos(args.num_videos_per_tar, args.output_dir, args.download_all, args.max_videos)
-        print("finished succesfully")
-
-## python swiss_ai/utils/download_fineVideo.py --output_dir "/store/swissai/a08/data/raw/finevideo"
-
+        # Run the main function with the option to start from a specific tar
+        download_and_tar_videos(args.num_videos_per_tar, args.output_dir, args.download_all, args.max_videos, args.start_from_tar)

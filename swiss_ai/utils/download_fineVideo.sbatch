@@ -9,8 +9,9 @@
 #SBATCH --reservation=sai-shared
 
 
-export ENROOT_LIBRARY_PATH=/capstor/scratch/cscs/fmohamed/enrootlibn
-
 
 pip install datasets
-python /users/julm/a08/julm/video2dataset/swiss_ai/utils/download_fineVideo.py --output_dir "/store/swissai/a08/data/raw/finevideo" --download_all --num_videos_per_tar 10
+
+python /users/julm/a08/julm/video2dataset/swiss_ai/utils/download_fineVideo.py --output_dir "/store/swissai/a08/data/raw/finevideo" --num_videos_per_tar 10 --download_all --start_from_tar 3588
+
+#python /users/julm/a08/julm/video2dataset/swiss_ai/utils/download_fineVideo.py --output_dir "/store/swissai/a08/data/raw/finevideo" --num_videos_per_tar 10 --download_all
